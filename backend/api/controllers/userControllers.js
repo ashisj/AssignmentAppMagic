@@ -43,11 +43,12 @@ exports.login = (req,res,next) => {
         var token = jwt.sign(
           {
             email:user.email,
-            _id : user._id
+            _id : user._id,
+            //password:user.password
           },
           process.env.JWT_PRIVATE_KEY,
           {
-            expiresIn: 300
+            expiresIn: 3000
           }
         );
         res.cookie('token',token);

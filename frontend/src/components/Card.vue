@@ -112,7 +112,9 @@ export default {
                     }
                     OrderService.orderProduct(orderData)
                      .then((response) => {
-                         router.push('/')
+                         //router.push('/')
+                         console.log("Success");
+                         
                      })
                      .catch((error) => {
                         if(error.response.status == 401){

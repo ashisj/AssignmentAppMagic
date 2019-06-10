@@ -35,8 +35,6 @@ exports.showProducts = (req,res,next) => {
         if(error){
             return next(error)
         }
-        console.log(result);
-        
         res.status(200).json({ products : result });
     });
 }
