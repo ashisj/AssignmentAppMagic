@@ -31,7 +31,6 @@ export default {
         let  client = {
             sandbox : "AT6RAkYF59bY2W5ChkpmdqkMWCRUoMAEOdbQQ1QHwpsxEmg-jj-csSTn_cR46qWKsxvhNr-ONhRekc0H"
         }
-//this.product[0].price
 
         let  payment = (data, actions) => {
         // Make a call to the REST api to create the payment
@@ -53,13 +52,14 @@ export default {
                 amount:this.product[0].price
             };
             this.sendDataPaypal({data:data})
-                .then((abc) => {
-                   console.log(abc);
-                   // to display the success message 
-
+                .then((response) => {
+                    alert(response.data.message);
+                    this.$store.commit('checkOutProduct',[]);
+                    router.push('/')
                 }).catch(err=>{
-                    console.log(err);
-                      // to display  the error message 
+                    this.$store.commit('loggedStatus',false);
+                    alert('Your session expired');
+                    router.push('/cart')
                 });
         }
 
@@ -84,40 +84,13 @@ export default {
             return new Promise((resolve, reject) => {
                 OrderService.orderProduct(data)
                     .then(res =>{
-                        return resolve()
+                        return resolve(res)
                     })
                     .catch((err) => {
                         return reject(err)
                     })
             })
         }
-
-
-        // payByPaypal() {
-        //     let orderData = {
-        //         name : this.details.name,
-        //         address : this.details.address,
-        //         paymentMode : this.details.paymentMode,
-        //         product : this.product,
-        //         token : this.$cookies.get('token')
-        //     }
-            
-        //     OrderService.orderProduct(orderData)
-        //         .then((response) => {
-        //                  //router.push('/')
-        //             window.open(response.data.paymenturl);
-                    
-        //             //window.open(response.data);
-                         
-        //         })
-        //         .catch((error) => {
-        //             if(error.response.status == 401){
-        //                 this.$store.commit('loggedStatus',false);
-        //                 alert('Your session expired');
-        //                 router.push('/cart')
-        //             }
-        //         })     
-        // }
         
     }
 }

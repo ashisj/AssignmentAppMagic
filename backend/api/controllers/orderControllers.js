@@ -9,23 +9,25 @@ exports.placeOrder = (req,res,next)=>{
     order.products = req.body.product;
     order.name = req.body.name;
     order.paymentMode = req.body.paymentMode;
-    order.address = req.body.address;
-    
+    order.address = req.body.address; 
     switch(req.body.paymentMode){
         case 'card':
                 Payment.cardPayment(req.body.product[0].price,req.body.paymentId,req.user.email,(err,transactionId) => {
                 if(err){
                     message = "Your transaction failed";
-                    sendMail(req.user.email,message)
+                    sendMail(req.user.email,message);
+                    return next(err);
                 }else{
-                    order.paymentID = transactionId;
+                    order.paymentId = transactionId;
                     order.save()
                         .then((response) => {
                             message = "Your order placed successfully having transaction id " + transactionId ;
                             sendMail(req.user.email,message)
+                            res.status(202).json({message:'Order placed successfully'})
                         })
                         .catch((error) => {
-                            console.log(error.message);
+                            res.status(202).json({message:'Order did not placed successfull, you will get your refund within 24 hours '})
+                            //console.log(error.message);
                         });
                 }
             });
@@ -40,28 +42,39 @@ exports.placeOrder = (req,res,next)=>{
                 Payment.paypalPayment(paymentID,execute_payment_json,payment,(err,result)=>{
                     if(err){
                         message = "Your transaction failed";
-                        sendMail(req.user.email,message);    
+                        sendMail(req.user.email,message); 
+                        return next(err);   
                     } else {
-                        order.paymentID = result;
+                        order.paymentId = result;
                         order.save()
                             .then((response) => {
                                 message = "Your order placed successfully having transaction id " + result ;
-                                sendMail(req.user.email,message)
+                                sendMail(req.user.email,message);
+                                res.status(202).json({message:'Order placed successfully'})
                             })
                             .catch((error) => {
-                                console.log(error.message);
+                                //console.log(error.message);
+                                res.status(202).json({message:'Order did not placed successfull, you will get your refund within 24 hours '})
                             });
                     }            
                 });
             break;
-
+            case 'cod':
+                order.save()
+                    .then((response) => {
+                        message = "Your order placed successfully, please pay during delivery";
+                        sendMail(req.user.email,message);
+                        res.status(202).json({message:'Order placed successfully'})
+                    })
+                    .catch((error) => {
+                        //console.log(error.message);
+                        res.status(202).json({message:'Order did not placed successfull'})
+                    });         
+            break;    
         default:
-             console.log(1);
+            res.status(202).json({message:'Invalid payment options'})
                 
     }
-    return res.send('success');
-    
-
 };
 
 function setMailOption(email,message) {

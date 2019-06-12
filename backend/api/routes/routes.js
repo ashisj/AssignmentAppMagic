@@ -19,12 +19,4 @@ router.post('/isLogin',Authenticate,(req,res) =>{
 
 router.post('/checkout',Authenticate,OrderController.placeOrder)
 
-/*
-router.get('/paypalsuccess',OrderController.placeOrder)
-
-
-router.get('/paypalFailure',(req,res) => {
-    res.end("hello failure")
-})
-*/
 module.exports = router

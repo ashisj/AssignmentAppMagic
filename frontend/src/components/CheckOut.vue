@@ -32,7 +32,7 @@
                         </div>
                         <div class="form-check">
                             <label class="form-check-label">
-                                <input type="radio" class="form-check-input" value = "netBanking" v-model="paymentDetails.paymentMode">Net Banking
+                                <input type="radio" class="form-check-input" value = "netBanking" v-model="paymentDetails.paymentMode" disabled>Net Banking
                             </label>
                         </div>
                         <div class="form-check">
@@ -49,6 +49,9 @@
                     <template v-if="paymentDetails.paymentMode == 'wallet'">
                         <payment-wallet :details="paymentDetails"></payment-wallet>
                     </template>
+                    <template v-if="paymentDetails.paymentMode == 'cod'">
+                        <button class="btn btn-primary " @click.prevent="placeOrder">Place Order</button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -61,7 +64,7 @@ import router from "../router/index";
 import AuthenticateService from '@/settings/AuthenticateService.js';
 import Card from './Card.vue';
 import Wallet from './Wallet.vue';
-
+import OrderService from '@/settings/OrderService.js';
 export default {
     name :'Wallet',
     components : {
@@ -74,7 +77,8 @@ export default {
                 paymentMode : '',
                 name        : '',
                 address     : '',
-            }
+            },
+            product :[]
         }
     },
     computed:{
@@ -83,6 +87,7 @@ export default {
         }
     },
     mounted(){
+        this.product = this.$store.getters.checkOutProduct;
         if(this.$store.getters.loggedStatus){
             let token = this.$cookies.get('token');
             if(token){
@@ -102,6 +107,30 @@ export default {
             router.push('/cart')
         }
         
+    },
+    methods:{
+        placeOrder(){
+            let orderData = {
+                name : this.paymentDetails.name,
+                address : this.paymentDetails.address,
+                paymentMode : this.paymentDetails.paymentMode,
+                product : this.product,
+                token : this.$cookies.get('token')
+            }
+            OrderService.orderProduct(orderData)
+                .then((response) => {
+                    alert(response.data.message);
+                    this.$store.commit('checkOutProduct',[]);
+                    router.push('/')
+                })
+                .catch((error) => {
+                    if(error.response.status == 401){
+                        this.$store.commit('loggedStatus',false);
+                        alert('Your session expired');
+                        router.push('/cart')
+                    }
+                }) 
+        }
     }
 }
 </script>

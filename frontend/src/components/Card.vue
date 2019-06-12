@@ -112,9 +112,9 @@ export default {
                     }
                     OrderService.orderProduct(orderData)
                      .then((response) => {
-                         //router.push('/')
-                         console.log("Success");
-                         
+                        alert(response.data.message);
+                        this.$store.commit('checkOutProduct',[]);
+                        router.push('/')
                      })
                      .catch((error) => {
                         if(error.response.status == 401){
