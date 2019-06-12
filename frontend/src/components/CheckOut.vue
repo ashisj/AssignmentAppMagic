@@ -46,6 +46,9 @@
                     <template v-if="paymentDetails.paymentMode == 'card'">
                         <payment-card :details="paymentDetails"></payment-card>
                     </template>
+                    <template v-if="paymentDetails.paymentMode == 'wallet'">
+                        <payment-wallet :details="paymentDetails"></payment-wallet>
+                    </template>
                 </div>
             </div>
         </div>
@@ -53,13 +56,17 @@
 </template>
 
 <script>
+
 import router from "../router/index";
 import AuthenticateService from '@/settings/AuthenticateService.js';
 import Card from './Card.vue';
+import Wallet from './Wallet.vue';
+
 export default {
-    name :'CheckOut',
+    name :'Wallet',
     components : {
-        'payment-card': Card
+        'payment-card'  : Card,
+        'payment-wallet': Wallet
     },
     data(){
         return {

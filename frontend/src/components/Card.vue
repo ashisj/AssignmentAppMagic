@@ -67,7 +67,7 @@ export default {
         }
     },
     mounted(){
-        this.product = this.$store.state.checkOutProduct;
+        this.product = this.$store.getters.checkOutProduct;
     },
     methods:{
         validate() {
