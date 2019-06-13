@@ -40,6 +40,11 @@
                                 <input type="radio" class="form-check-input" value = "cod" v-model="paymentDetails.paymentMode">Cash on Delivery
                             </label>
                         </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="radio" class="form-check-input" value = "razorpay" v-model="paymentDetails.paymentMode">Pay Using RazorPay
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm-12 col-md-4 offset-md-2">
@@ -51,6 +56,9 @@
                     </template>
                     <template v-if="paymentDetails.paymentMode == 'cod'">
                         <button class="btn btn-primary " @click.prevent="placeOrder">Place Order</button>
+                    </template>
+                    <template v-if="paymentDetails.paymentMode == 'razorpay'">
+                         <payment-razorpay :details="paymentDetails"></payment-razorpay>
                     </template>
                 </div>
             </div>
@@ -64,12 +72,14 @@ import router from "../router/index";
 import AuthenticateService from '@/settings/AuthenticateService.js';
 import Card from './Card.vue';
 import Wallet from './Wallet.vue';
+import RazorPay from './Razorpay.vue';
 import OrderService from '@/settings/OrderService.js';
 export default {
     name :'Wallet',
     components : {
         'payment-card'  : Card,
-        'payment-wallet': Wallet
+        'payment-wallet': Wallet,
+        'payment-razorpay' : RazorPay
     },
     data(){
         return {

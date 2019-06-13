@@ -1,6 +1,13 @@
 const Payment = {};
 const paypal = require('paypal-rest-sdk');
+/*
+const Razorpay = require('razorpay');
 
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+*/
 paypal.configure({
     'mode': process.env.PAYPAL_ENVIRONMENT, //sandbox or live
     'client_id': process.env.PAYPAL_CLIENT_ID, // please provide your client id here
@@ -45,5 +52,11 @@ Payment.cardPayment = (paymentAmount,token,user,done) => {
         return done(null,charge.id)
     });
 }
-
+/*
+Payment.razorpayPayment =(payment_id,done) => {
+    razorpayInstance.payments.fetch(payment_id)
+        .then((response)=>{console.log(response);})
+        .catch((error)=>{console.log(error);})
+}
+*/
 module.exports = Payment

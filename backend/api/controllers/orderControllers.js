@@ -12,22 +12,18 @@ exports.placeOrder = (req,res,next)=>{
     order.address = req.body.address; 
     switch(req.body.paymentMode){
         case 'card':
-                Payment.cardPayment(req.body.product[0].price,req.body.paymentId,req.user.email,(err,transactionId) => {
+                Payment.cardPayment(req.body.product[0].price,req.body.paymentId,req.user.email,(err,paymentId) => {
                 if(err){
-                    message = "Your transaction failed";
-                    sendMail(req.user.email,message);
+                    sendMail(req.user.email,"Your transaction failed");
                     return next(err);
                 }else{
-                    order.paymentId = transactionId;
+                    order.paymentId = paymentId;
                     order.save()
                         .then((response) => {
-                            message = "Your order placed successfully having transaction id " + transactionId ;
-                            sendMail(req.user.email,message)
-                            res.status(202).json({message:'Order placed successfully'})
+                            successOrder(paymentId,req.user.email,res);
                         })
                         .catch((error) => {
-                            res.status(202).json({message:'Order did not placed successfull, you will get your refund within 24 hours '})
-                            //console.log(error.message);
+                            failureOrder(res)
                         });
                 }
             });
@@ -39,22 +35,18 @@ exports.placeOrder = (req,res,next)=>{
                 const payment ={}
                 payment.amount=req.body.data.amount
                 const paymentID=req.body.data.paymentID
-                Payment.paypalPayment(paymentID,execute_payment_json,payment,(err,result)=>{
+                Payment.paypalPayment(paymentID,execute_payment_json,payment,(err,paymentId)=>{
                     if(err){
-                        message = "Your transaction failed";
-                        sendMail(req.user.email,message); 
+                        sendMail(req.user.email,"Your transaction failed"); 
                         return next(err);   
                     } else {
-                        order.paymentId = result;
+                        order.paymentId = paymentId;
                         order.save()
                             .then((response) => {
-                                message = "Your order placed successfully having transaction id " + result ;
-                                sendMail(req.user.email,message);
-                                res.status(202).json({message:'Order placed successfully'})
+                                successOrder(paymentId,req.user.email,res);
                             })
                             .catch((error) => {
-                                //console.log(error.message);
-                                res.status(202).json({message:'Order did not placed successfull, you will get your refund within 24 hours '})
+                                failureOrder(res)
                             });
                     }            
                 });
@@ -62,15 +54,24 @@ exports.placeOrder = (req,res,next)=>{
             case 'cod':
                 order.save()
                     .then((response) => {
-                        message = "Your order placed successfully, please pay during delivery";
-                        sendMail(req.user.email,message);
+                        sendMail(req.user.email,"Your order placed successfully, please pay during delivery");
                         res.status(202).json({message:'Order placed successfully'})
                     })
                     .catch((error) => {
-                        //console.log(error.message);
                         res.status(202).json({message:'Order did not placed successfull'})
                     });         
-            break;    
+            break;
+            case 'razorpay':
+                //Payment.razorpayPayment(req.body.paymentId);
+                order.paymentId = req.body.paymentId;
+                order.save()
+                    .then((response) => {
+                        successOrder(req.body.paymentId,req.user.email,res);
+                    })
+                    .catch((error) => {
+                        failureOrder(res)
+                    });
+            break  
         default:
             res.status(202).json({message:'Invalid payment options'})
                 
@@ -98,5 +99,15 @@ function sendMail(userEmail,message){
         }
             console.log('Message %s sent: %s', info.messageId, info.response);
         });
+}
+
+function successOrder(paymentId,email,res){
+    message = "Your order placed successfully having transaction id " + paymentId ;
+    sendMail(email,message);
+    res.status(202).json({message:'Order placed successfully'})
+}
+
+function failureOrder(res){
+    res.status(202).json({message:'Order did not placed successfull, you will get your refund within 24 hours '})
 }
 
